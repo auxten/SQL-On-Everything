@@ -10,6 +10,8 @@ from googleapiclient.errors import HttpError
 
 import chdb
 
+from utils import convert_to_columnar, infer_data_types
+
 # First, you need to enable the Google Calendar API in the Google Cloud Console
 # and download the credentials.json file.
 # https://developers.google.com/calendar/api/quickstart/python#enable_the_api
@@ -40,7 +42,7 @@ def getCalItems():
         service = build("calendar", "v3", credentials=creds)
         events_result = service.events().list(calendarId="primary").execute()
         events = events_result.get("items", [])
-        return chdb.utils.convert_to_columnar(events)
+        return convert_to_columnar(events)
 
     except HttpError as error:
         print("An error occurred: %s" % error)
@@ -54,7 +56,7 @@ class calReader(chdb.PyReader):
 
     # If get_schema is not implemented, the schema will be inferred from the first batch of data
     def get_schema(self):
-        return chdb.utils.infer_data_types(self.data)
+        return infer_data_types(self.data)
 
     def read(self, col_names, count):
         if self.cursor >= len(self.data[col_names[0]]):
