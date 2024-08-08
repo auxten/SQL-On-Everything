@@ -1,3 +1,4 @@
+import sys
 import os.path
 
 # install with `pip install --upgrade google-auth-oauthlib google-auth-httplib2 google-api-python-client`
@@ -45,20 +46,20 @@ def getCalItems():
         print("An error occurred: %s" % error)
 
 
-class myReader(chdb.PyReader):
-    def __init__(self, data_fetcher):
-        self.data_fetcher = data_fetcher
-        super().__init__("")
+class calReader(chdb.PyReader):
+    def __init__(self, data):
+        self.data = data
+        self.cursor = 0
+        super().__init__(data)
 
     # If get_schema is not implemented, the schema will be inferred from the first batch of data
     def get_schema(self):
-        self.data = self.data_fetcher()
-        data_types = chdb.utils.infer_data_types(self.data)
-        self.cursor = 0
-        return data_types
+        return chdb.utils.infer_data_types(self.data)
 
     def read(self, col_names, count):
         if self.cursor >= len(self.data[col_names[0]]):
+            # reset cursor in case query is run again on the same object
+            self.cursor = 0
             return []
         start = self.cursor
         end = min(start + count, len(self.data[col_names[0]]))
@@ -67,7 +68,26 @@ class myReader(chdb.PyReader):
 
 
 if __name__ == "__main__":
-    cal_reader = myReader(getCalItems)
-    # print(chdb.query("DESCRIBE Python(cal_reader)"))
-    # print(chdb.query("SELECT * FROM Python(cal_reader)", "Dataframe"))
-    print(chdb.query("SELECT * FROM Python(cal_reader) LIMIT 1", "JSON"))
+    cal = calReader(getCalItems())
+    outputFormat = "PrettyCompact"
+    # python google_cal.py SQL [outputFormat]
+    if len(sys.argv) > 1:
+        if len(sys.argv) == 3:
+            outputFormat = sys.argv[2]
+        sql = sys.argv[1].strip()
+        sql_lower = sql.lower()
+        if "from" not in sql_lower and sql_lower.startswith("select"):
+            # Add FROM Python(cal) if not already present
+            sql = "FROM Python(cal) " + sql
+        print(chdb.query(sql, outputFormat))
+    else:
+        print(
+            """
+Usage: python google_cal.py SQL [outputFormat]
+    - SQL: SQL query to run on the Google Calendar data, `FROM Python(cal)` could be omitted. eg:
+      - "SELECT summary, organizer_email, parseDateTimeBestEffortOrNull(start_dateTime) LIMIT 10;";
+      - "DESCRIBE Python(cal)"
+
+    - outputFormat: Output format, e.g. Dataframe, CSV, JSON, PrettyCompact
+"""
+        )
