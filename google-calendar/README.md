@@ -5,6 +5,17 @@
 
 SQL on Google Calendar is a simple project that uses Google Calendar API to fetch events from a calendar and query it with [chDB](https://github.com/chdb-io/chdb) User Defined Table (UDT).
 
+
+## Example
+
+```bash
+python google_cal.py \
+  "SELECT summary, organizer_email, parseDateTimeBestEffortOrNull(start_dateTime) WHERE status = 'confirmed';"
+```
+
+![Example](img/shot.png)
+
+
 ## Requirements
 
 1. Clone the repository.
@@ -40,16 +51,6 @@ Usage: `python google_cal.py sql [outputFormat]`
     - DESCRIBE Python(cal)
 
 - outputFormat: Output format, e.g. Dataframe, CSV, JSON, PrettyCompact
-
-## Example
-
-```bash
-python google_cal.py \
- "SELECT summary, organizer_email, parseDateTimeBestEffortOrNull(start_dateTime) WHERE status = 'confirmed';"
-```
-
-![Example](img/shot.png)
-
 
 ## Notice
 
