@@ -1,0 +1,4 @@
+chdb>=2.0.0b1
+google-api-python-client==2.140.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
