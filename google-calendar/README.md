@@ -13,7 +13,7 @@ python google_cal.py \
   "SELECT summary, organizer_email, parseDateTimeBestEffortOrNull(start_dateTime) WHERE status = 'confirmed';"
 ```
 
-![Example](img/shot.png)
+![Example](img/example.png)
 
 
 ## Requirements
